@@ -6,31 +6,10 @@ import "react-datepicker/dist/react-datepicker.css";
 // TODO: Add form for time
 
 function Form(props) {
-  const [val, setVal] = useState('')
-
-  function handleSubmit(event) {
-    let toSubmit = {'reminder':val, 'unixTime':1234}
-    fetch('http://localhost:5000/reminder', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(toSubmit),
-    })
-    .then(() => {
-      props.handleFormSubmit()
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-    });
-
-    event.preventDefault();
-  }
-
-  return <form onSubmit={handleSubmit}>
+  return <form onSubmit={props.handleFormSubmit}>
       <label>
         Reminder:
-        <input type="text" value={val} onChange={e => setVal(e.target.value)} /> 
+        <input type="text" value={props.formVal} onChange={e => props.onFormChange(e)} /> 
         Time:
       </label>
       <input type="submit" value="Submit" />
@@ -60,7 +39,8 @@ function Table(props) {
 function App(props) {
   // Remind data array
   const [reminderData, setReminderData] = useState([]);
-  const [startDate, setStartDate] = useState(new Date());
+  const [reminderDate, setReminderDate] = useState(new Date());
+  const [formVal, setFormVal] = useState('')
 
   useEffect(() => { 
     fetch('http://localhost:5000/reminder')
@@ -94,19 +74,38 @@ function App(props) {
     });
   }
 
-  function handleFormSubmit() {
-    // just refresh the data. *probably* a better way 
-    // to do this than just fetching the data again. TODO. 
-    fetch('http://localhost:5000/reminder').then(res => res.json()).then(data => {
-      setReminderData(data);
+  function handleFormSubmit(event) {
+    console.log(formVal)
+    let toSubmit = {'reminder':formVal, 'unixTime':reminderDate.getTime()}
+    
+    fetch('http://localhost:5000/reminder', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(toSubmit),
+    })
+    .then(() => {
+      fetch('http://localhost:5000/reminder').then(res => res.json()).then(data => {
+        setReminderData(data);
+      });
+    })
+    .catch((error) => {
+      console.error('Error:', error);
     });
+
+    event.preventDefault();
   }
 
+  function handleFormChange(event) {
+    setFormVal(event.target.value);
+  }
+  
   return (
       <div>
           <DatePicker
-            selected={startDate}
-            onChange={date => {setStartDate(date);console.log(date.getTime())}}
+            selected={reminderDate}
+            onChange={date => {setReminderDate(date)}}
             showTimeSelect
             timeFormat="HH:mm"
             timeIntervals={15}
@@ -114,6 +113,8 @@ function App(props) {
             dateFormat="MMMM d, yyyy h:mm aa"
           />
         <Form 
+          formVal = {formVal}
+          onFormChange={handleFormChange}
           handleFormSubmit={handleFormSubmit}
         />
         Table Entries
