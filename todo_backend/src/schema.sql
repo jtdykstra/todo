@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS reminders;
+
+CREATE TABLE reminders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  reminder TEXT NOT NULL,
+  unixTime INTEGER NOT NULL
+);
