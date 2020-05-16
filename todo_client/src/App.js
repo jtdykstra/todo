@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-// TODO: Add time logic for API calls
-// TODO: Add form for time
+// TODO: Double click delete fix
+// TODO: Authentication
+// TODO: Update of table on backend timer deletion?
 
 function Form(props) {
   return <form onSubmit={props.handleFormSubmit}>

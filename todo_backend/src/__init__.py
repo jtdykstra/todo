@@ -2,13 +2,46 @@ import os
 
 from flask import (Flask, request, make_response)
 from src.db import get_db
+import threading
+import time
 import time
 import json
+import heapq
+from collections import namedtuple
 
 # TODO: Understand CORs properly
 # TODO: Set up hooks to fire at the specified time
 # TODO: Generate the text messages somehow!
 # TODO: Security ;)?
+# TODO: Add authentication
+
+reminderHeap =  []
+timer = None
+
+class Reminder:
+    def __init__(self, unixTime, reminder):
+        self.unixTime = unixTime
+        self.reminder = reminder
+
+    def __lt__(self, other):
+        return self.unixTime < other.unixTime
+
+def timerHandler(reminder):
+    heapq.heappop(reminderHeap)
+    if (len(reminderHeap) > 0):
+        interval = reminderHeap[0].unixTime/1000 - time.time()
+        timer = threading.Timer(interval, timerHandler, [reminderHeap[0].reminder])
+        timer.start()
+
+def addTimer(unixTime, reminder):
+    global timer
+    if (timer):
+        timer.cancel()
+    r = Reminder(unixTime, reminder)
+    heapq.heappush(reminderHeap, r) 
+    interval = reminderHeap[0].unixTime/1000 - time.time()
+    timer = threading.Timer(interval, timerHandler, [reminderHeap[0].reminder])
+    timer.start()
 
 def create_app(test_config=None):
     # create and configure the app
@@ -52,12 +85,8 @@ def create_app(test_config=None):
             content = request.get_json()
             reminder = content["reminder"]
             unixTime = content['unixTime']
-            
-            error = False
 
-            print(reminder)
-            print(unixTime)
-            
+            addTimer(unixTime, reminder)
             db.execute(
                 'INSERT INTO reminders (reminder, unixTime) VALUES (?, ?)',
                 (reminder, int(unixTime))
