@@ -9,7 +9,8 @@
 /coverage
 
 # production
-/build
+# I want this for easy to transfer to server
+# /build
 
 # misc
 .DS_Store
