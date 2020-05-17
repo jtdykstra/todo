@@ -1,0 +1,3 @@
+systemctl start/stop/restart nginx
+ln -s PATH_TO_FILE
+symlinked nginx.conf and sites-enabled/todo_nginx_conf
